@@ -1,12 +1,21 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const OpenAI = require('openai');
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 async function analyzeCV(cvText) {
-const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-
-  const prompt = `
-You are an expert CV analyzer. Analyze the following CV text and return a JSON object only (no markdown, no extra text).
+  const response = await client.chat.completions.create({
+    model: 'gpt-4o-mini', 
+    messages: [
+      {
+        role: 'system',
+        content: 'You are an expert CV analyzer. Always respond with valid JSON only, no markdown, no extra text.',
+      },
+      {
+        role: 'user',
+        content: `
+Analyze the following CV text and return a JSON object only.
 
 CV Text:
 """
@@ -29,14 +38,14 @@ Return this exact JSON structure:
   ],
   "summary": "brief professional summary in Arabic"
 }
-`;
+        `,
+      },
+    ],
+    response_format: { type: 'json_object' }, 
+  });
 
-  const result = await model.generateContent(prompt);
-  const text = result.response.text();
-
-  // تنظيف الـ response وparse الـ JSON
-  const cleaned = text.replace(/```json|```/g, '').trim();
-  return JSON.parse(cleaned);
+  const text = response.choices[0].message.content;
+  return JSON.parse(text);
 }
 
 module.exports = { analyzeCV };
