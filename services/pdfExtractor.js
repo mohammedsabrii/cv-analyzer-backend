@@ -1,4 +1,5 @@
 const supabase = require('./supabaseClient');
+const PDFParser = require('pdf2json');
 
 async function extractTextFromSupabase(filePath) {
   const { data, error } = await supabase.storage
@@ -10,22 +11,22 @@ async function extractTextFromSupabase(filePath) {
   const arrayBuffer = await data.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
 
-  // استخدام pdfjs-dist
-  const pdfjsLib = require('pdfjs-dist/legacy/build/pdf.js');
-  pdfjsLib.GlobalWorkerOptions.workerSrc = false;
+  return new Promise((resolve, reject) => {
+    const pdfParser = new PDFParser();
 
-  const loadingTask = pdfjsLib.getDocument({ data: buffer });
-  const pdfDocument = await loadingTask.promise;
+    pdfParser.on('pdfParser_dataReady', (pdfData) => {
+      const text = pdfData.Pages.map((page) =>
+        page.Texts.map((t) => decodeURIComponent(t.R.map((r) => r.T).join(''))).join(' ')
+      ).join('\n');
+      resolve(text);
+    });
 
-  let fullText = '';
-  for (let i = 1; i <= pdfDocument.numPages; i++) {
-    const page = await pdfDocument.getPage(i);
-    const textContent = await page.getTextContent();
-    const pageText = textContent.items.map((item) => item.str).join(' ');
-    fullText += pageText + '\n';
-  }
+    pdfParser.on('pdfParser_dataError', (err) => {
+      reject(new Error(`PDF parse error: ${err.parserError}`));
+    });
 
-  return fullText;
+    pdfParser.parseBuffer(buffer);
+  });
 }
 
 module.exports = { extractTextFromSupabase };
