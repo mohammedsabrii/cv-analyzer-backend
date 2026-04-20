@@ -10,10 +10,22 @@ async function extractTextFromSupabase(filePath) {
   const arrayBuffer = await data.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
 
-  // ✅ import جوه الfunction مباشرة
-  const pdfParse = require('pdf-parse/lib/pdf-parse.js');
-  const pdfData = await pdfParse(buffer);
-  return pdfData.text;
+  // استخدام pdfjs-dist
+  const pdfjsLib = require('pdfjs-dist/legacy/build/pdf.js');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = false;
+
+  const loadingTask = pdfjsLib.getDocument({ data: buffer });
+  const pdfDocument = await loadingTask.promise;
+
+  let fullText = '';
+  for (let i = 1; i <= pdfDocument.numPages; i++) {
+    const page = await pdfDocument.getPage(i);
+    const textContent = await page.getTextContent();
+    const pageText = textContent.items.map((item) => item.str).join(' ');
+    fullText += pageText + '\n';
+  }
+
+  return fullText;
 }
 
 module.exports = { extractTextFromSupabase };
