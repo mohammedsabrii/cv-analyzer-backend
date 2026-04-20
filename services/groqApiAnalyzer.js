@@ -4,18 +4,19 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-async function analyzeCV(cvText) {
+async function analyzeCV(cvText, language = 'Arabic') {
   const response = await groq.chat.completions.create({
     model: 'llama-3.3-70b-versatile',
     messages: [
       {
         role: 'system',
-        content: 'You are an expert CV analyzer. Always respond with valid JSON only, no markdown, no extra text, no code blocks.',
+        content: `You are an expert CV analyzer. Always respond with valid JSON only, no markdown, no extra text, no code blocks.`,
       },
       {
         role: 'user',
         content: `
 Analyze the following CV text and return a JSON object only.
+All text fields (summary, cv_improvements) must be written in ${language}.
 
 CV Text:
 """
@@ -32,11 +33,11 @@ Return this exact JSON structure:
   "skills": ["skill1", "skill2"],
   "disability_type": "one of: Limb Amputation, Visual Disability, Hearing Disability, Motor Disability, Chronic Illness, Epilepsy & Neurological Conditions, High-Functioning Autism & Asperger, Spinal & Chronic Pain Disorders — or null if not mentioned",
   "cv_improvements": [
-    "improvement suggestion 1 in Arabic",
-    "improvement suggestion 2 in Arabic",
-    "improvement suggestion 3 in Arabic"
+    "improvement suggestion 1 in ${language}",
+    "improvement suggestion 2 in ${language}",
+    "improvement suggestion 3 in ${language}"
   ],
-  "summary": "brief professional summary in Arabic"
+  "summary": "brief professional summary in ${language}"
 }
         `,
       },
