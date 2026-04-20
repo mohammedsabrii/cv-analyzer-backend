@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { extractTextFromSupabase } = require('../services/pdfExtractor');
-const { analyzeCV } = require('../services/openaiAnalyzer');
+const { analyzeCV } = require('../services/groqApiAnalyzer');
 const { matchJobs } = require('../services/jobMatcher');
 
 // POST /api/analyze
