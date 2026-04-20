@@ -1,4 +1,3 @@
-const pdfParse = require('pdf-parse');
 const supabase = require('./supabaseClient');
 
 async function extractTextFromSupabase(filePath) {
@@ -11,7 +10,8 @@ async function extractTextFromSupabase(filePath) {
   const arrayBuffer = await data.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
 
-  // ✅ الحل: استخدام pdfParse مباشرة مش pdf
+  // ✅ import جوه الfunction مباشرة
+  const pdfParse = require('pdf-parse/lib/pdf-parse.js');
   const pdfData = await pdfParse(buffer);
   return pdfData.text;
 }
