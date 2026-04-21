@@ -5,22 +5,7 @@ async function matchJobs(cvAnalysis) {
 
   let query = supabase
     .from('job_listings')
-    .select(`
-      id,
-      user_id,
-      job_title,
-      category,
-      description,
-      expected_salary,
-      experience,
-      disabilities,
-      company_name,
-      company_logo,
-      company_location,
-      company_email,
-      about_company,
-      created_at
-    `); 
+    .select(); 
 
   if (disability_type) {
     query = query.contains('disabilities', [disability_type]);
